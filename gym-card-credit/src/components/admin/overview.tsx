@@ -1,6 +1,10 @@
+"use client"
+
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
-import { Users, CreditCard } from "lucide-react"
+import { Button } from "@/components/ui/button"
+import { Users, CreditCard, Search } from "lucide-react"
+import { RfidScannerDialog } from "./rfid-scanner-dialog"
 
 interface User {
   _id: string
@@ -13,13 +17,60 @@ interface User {
 
 interface OverviewProps {
   users: User[]
+  onUserDeleted: () => void
+  onShowToast: (type: "success" | "error", title: string, description?: string) => void
 }
 
-export function Overview({ users }: OverviewProps) {
+export function Overview({ users, onUserDeleted, onShowToast }: OverviewProps) {
   const activeMembers = users.filter((u) => u.credit > 0).length
+
+  const deleteUser = async (userId: string) => {
+    try {
+      const response = await fetch("/api/users", {
+        method: "DELETE",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          rfidUid: userId,
+        }),
+      })
+
+      const data = await response.json()
+
+      if (response.ok) {
+        onShowToast("success", "User Deleted", `User has been successfully removed from the system`)
+        onUserDeleted()
+        return { success: true, data }
+      } else {
+        onShowToast("error", "Delete Failed", data.error || "Failed to delete user")
+        return { success: false, error: data.error }
+      }
+    } catch (error) {
+      console.error("Network error:", error)
+      onShowToast("error", "Network Error", "Failed to connect to server")
+      return { success: false, error: "Network error" }
+    }
+  }
 
   return (
     <div className="space-y-6">
+      {/* Header with Scanner Button */}
+      <div className="flex items-center justify-between">
+        <div>
+          <h2 className="text-2xl font-bold">Overview</h2>
+          <p className="text-gray-600">Manage your gym members and view statistics</p>
+        </div>
+        <RfidScannerDialog
+          trigger={
+            <Button variant="outline">
+              <Search className="w-4 h-4 mr-2" />
+              Scan Card to View User
+            </Button>
+          }
+        />
+      </div>
+
       {/* Stats Cards */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
         <Card>
@@ -58,13 +109,30 @@ export function Overview({ users }: OverviewProps) {
                   <div>
                     <h3 className="font-semibold">{user.name}</h3>
                     <p className="text-sm text-gray-600">Card: {user.rfidUid}</p>
+                    <p className="text-sm text-gray-600">Joined: {new Date(user.createdAt).toLocaleDateString()}</p>
                   </div>
                 </div>
-                <div className="flex items-center gap-4">
-                  <Badge variant={user.credit > 5 ? "default" : user.credit > 0 ? "secondary" : "destructive"}>
-                    {user.credit} credits
-                  </Badge>
-                  <div className="text-sm text-gray-500">Last: {new Date(user.lastScan).toLocaleDateString()}</div>
+
+                <div className="flex items-center justify-between gap-4">
+                  <div className="flex items-center gap-4">
+                    <Badge variant={user.credit > 5 ? "default" : user.credit > 0 ? "secondary" : "destructive"}>
+                      {user.credit} credits
+                    </Badge>
+                    <div className="text-sm text-gray-500">Last: {new Date(user.lastScan).toLocaleDateString()}</div>
+                  </div>
+                  <div>
+                    <Button
+                      variant="destructive"
+                      size="sm"
+                      onClick={async () => {
+                        if (confirm(`Are you sure you want to delete ${user.name}? This action cannot be undone.`)) {
+                          await deleteUser(user.rfidUid)
+                        }
+                      }}
+                    >
+                      Delete
+                    </Button>
+                  </div>
                 </div>
               </div>
             ))}

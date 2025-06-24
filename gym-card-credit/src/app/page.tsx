@@ -33,13 +33,10 @@ export default function UserDisplayScreen() {
         const response = await fetch(`/api/recent-scans?since=${lastScanTimestamp}`)
         if (response.ok) {
           const data = await response.json()
-          console.log("Polling data:", data)
-
           // Check if there are new scans
           if (data.scans && data.scans.length > 0) {
             // Get the most recent scan
             const latestScan = data.scans[data.scans.length - 1]
-            console.log("Latest scan:", latestScan)
 
             // Update timestamp to avoid processing the same scan again
             setLastScanTimestamp(latestScan.timestamp)
@@ -81,7 +78,6 @@ export default function UserDisplayScreen() {
       })
 
       const scanResult = await scanResponse.json()
-      console.log("Scan result:", scanResult)
 
       if (scanResult.success) {
         // If access is granted, deduct credits with PATCH

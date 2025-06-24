@@ -7,7 +7,7 @@ export async function GET() {
     const users = await User.find({}).sort({ createdAt: -1 })
     return NextResponse.json(users)
   } catch (error) {
-    console.error("Get users error:", error)
+    console.error("Failed to fetch users:", error)
     return NextResponse.json({ error: "Failed to fetch users" }, { status: 500 })
   }
 }
@@ -67,8 +67,6 @@ export async function POST(request: NextRequest) {
 
     await user.save()
 
-    console.log(`[USER CREATE] Successfully created user: ${user.name}`)
-
     return NextResponse.json({
       success: true,
       user: {
@@ -81,7 +79,38 @@ export async function POST(request: NextRequest) {
       },
     })
   } catch (error) {
-    console.error("Create user error:", error)
+    console.error("Failed to create user:", error)
     return NextResponse.json({ error: "Failed to create user" }, { status: 500 })
+  }
+}
+
+export async function DELETE(request: NextRequest) {
+  try {
+    const { rfidUid } = await request.json()
+
+    if (!rfidUid) {
+      return NextResponse.json({ error: "RFID UID is required" }, { status: 400 })
+    }
+
+    await connectDB()
+
+    const deletedUser = await User.findOneAndDelete({ rfidUid })
+
+    if (!deletedUser) {
+      return NextResponse.json({ error: "User not found" }, { status: 404 })
+    }
+
+    return NextResponse.json({
+      success: true,
+      message: "User deleted successfully",
+      deletedUser: {
+        _id: deletedUser._id,
+        name: deletedUser.name,
+        rfidUid: deletedUser.rfidUid,
+      },
+    })
+  } catch (error) {
+    console.error("Failed to delete user:", error)
+    return NextResponse.json({ error: "Failed to delete user" }, { status: 500 })
   }
 }
