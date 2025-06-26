@@ -9,7 +9,7 @@ import { AddNewUser } from "@/components/admin/add-new-user"
 import { TopUp } from "@/components/admin/top-up"
 import { ToastNotifications } from "@/components/toast-notifications"
 import { useToastNotifications } from "@/hooks/use-toast-notifications"
-
+import Link from "next/link"
 interface User {
   _id: string
   name: string
@@ -66,10 +66,10 @@ export default function AdminDashboard() {
         <div className="flex items-center justify-between mb-8 ">
           <div className="flex flex-wrap-reverse items-center gap-3 justify-center md:justify-between w-full">
             <Button variant="outline" size="sm" asChild> 
-              <a href="/">
+              <Link href="/">
                 <ArrowLeft className="w-4 h-4 mr-2 " />
                 Back to Scanner
-              </a>
+              </Link>
             </Button>
             <div>
               <h1 className="text-3xl font-bold text-gray-900">Admin Dashboard</h1>
