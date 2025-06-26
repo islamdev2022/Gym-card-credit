@@ -11,6 +11,12 @@ export async function GET(request: NextRequest) {
     // Return scans that occurred after the 'since' timestamp
     const filteredScans = recentScans.filter(scan => scan.timestamp > since)
     
+    // IMPORTANT: Remove the scans that we're returning to prevent reprocessing
+    if (filteredScans.length > 0) {
+      const returnedTimestamps = filteredScans.map(scan => scan.timestamp)
+      recentScans = recentScans.filter(scan => !returnedTimestamps.includes(scan.timestamp))
+    }
+    
     return NextResponse.json({
       scans: filteredScans.map(scan => ({
         uid: scan.uid,

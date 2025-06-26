@@ -45,6 +45,19 @@ export default function AdminDashboard() {
   const handleUserUpdated = () => {
     fetchUsers()
   }
+  
+  const handleUserDeleted = () => {
+    fetchUsers()
+  }
+
+  // Create a unified toast handler that can handle both success and error types
+  const handleShowToast = (type: "success" | "error", title: string, description?: string) => {
+    if (type === "success") {
+      showSuccess(title, description)
+    } else {
+      showError(title, description)
+    }
+  }
 
   return (
     <div className="min-h-screen bg-gray-50 p-6">
@@ -73,15 +86,15 @@ export default function AdminDashboard() {
           </TabsList>
 
           <TabsContent value="overview">
-            <Overview users={users} />
+            <Overview users={users} onShowToast={handleShowToast} onUserDeleted={handleUserDeleted} />
           </TabsContent>
 
           <TabsContent value="add-user">
-            <AddNewUser onUserAdded={handleUserAdded} onShowToast={showSuccess} />
+            <AddNewUser onUserAdded={handleUserAdded} onShowToast={handleShowToast} />
           </TabsContent>
 
           <TabsContent value="topup">
-            <TopUp users={users} onUserUpdated={handleUserUpdated} onShowToast={showSuccess} />
+            <TopUp users={users} onUserUpdated={handleUserUpdated} onShowToast={handleShowToast} />
           </TabsContent>
         </Tabs>
       </div>

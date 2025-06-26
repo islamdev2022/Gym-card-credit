@@ -219,7 +219,7 @@ export function TopUp({ users, onUserUpdated, onShowToast }: TopUpProps) {
               <div className="flex items-center justify-between">
                 <div>
                   <h3 className="font-semibold text-blue-900">{selectedUser.name}</h3>
-                  <p className="text-blue-700">Current Credit: {selectedUser.credit} visits</p>
+                  <p className="text-blue-700">Current Credit: {selectedUser.credit} Credits</p>
                 </div>
                 <Badge variant="outline">{selectedUser.rfidUid}</Badge>
               </div>

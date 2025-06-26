@@ -1,10 +1,12 @@
 "use client"
 
+import { useState } from "react"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Users, CreditCard, Search } from "lucide-react"
 import { RfidScannerDialog } from "./rfid-scanner-dialog"
+import { ConfirmationDialog } from "@/components/confirmation-dialog"
 
 interface User {
   _id: string
@@ -22,9 +24,14 @@ interface OverviewProps {
 }
 
 export function Overview({ users, onUserDeleted, onShowToast }: OverviewProps) {
+  const [deleteConfirmOpen, setDeleteConfirmOpen] = useState(false)
+  const [userToDelete, setUserToDelete] = useState<User | null>(null)
+  const [isDeleting, setIsDeleting] = useState(false)
+
   const activeMembers = users.filter((u) => u.credit > 0).length
 
   const deleteUser = async (userId: string) => {
+    setIsDeleting(true)
     try {
       const response = await fetch("/api/users", {
         method: "DELETE",
@@ -50,6 +57,20 @@ export function Overview({ users, onUserDeleted, onShowToast }: OverviewProps) {
       console.error("Network error:", error)
       onShowToast("error", "Network Error", "Failed to connect to server")
       return { success: false, error: "Network error" }
+    } finally {
+      setIsDeleting(false)
+    }
+  }
+
+  const handleDeleteClick = (user: User) => {
+    setUserToDelete(user)
+    setDeleteConfirmOpen(true)
+  }
+
+  const handleConfirmDelete = async () => {
+    if (userToDelete) {
+      await deleteUser(userToDelete.rfidUid)
+      setUserToDelete(null)
     }
   }
 
@@ -68,6 +89,8 @@ export function Overview({ users, onUserDeleted, onShowToast }: OverviewProps) {
               Scan Card to View User
             </Button>
           }
+          onUserDeleted={onUserDeleted}
+          onShowToast={onShowToast}
         />
       </div>
 
@@ -124,13 +147,10 @@ export function Overview({ users, onUserDeleted, onShowToast }: OverviewProps) {
                     <Button
                       variant="destructive"
                       size="sm"
-                      onClick={async () => {
-                        if (confirm(`Are you sure you want to delete ${user.name}? This action cannot be undone.`)) {
-                          await deleteUser(user.rfidUid)
-                        }
-                      }}
+                      onClick={() => handleDeleteClick(user)}
+                      disabled={isDeleting}
                     >
-                      Delete
+                      {isDeleting && userToDelete?._id === user._id ? "Deleting..." : "Delete"}
                     </Button>
                   </div>
                 </div>
@@ -142,6 +162,22 @@ export function Overview({ users, onUserDeleted, onShowToast }: OverviewProps) {
           </div>
         </CardContent>
       </Card>
+
+      {/* Confirmation Dialog */}
+      <ConfirmationDialog
+        open={deleteConfirmOpen}
+        onOpenChange={setDeleteConfirmOpen}
+        title="Delete User"
+        description={
+          userToDelete
+            ? `Are you sure you want to delete ${userToDelete.name}? This action cannot be undone and will permanently remove the user from the system.`
+            : "Are you sure you want to delete this user?"
+        }
+        confirmText="Delete User"
+        cancelText="Cancel"
+        variant="destructive"
+        onConfirm={handleConfirmDelete}
+      />
     </div>
   )
 }
