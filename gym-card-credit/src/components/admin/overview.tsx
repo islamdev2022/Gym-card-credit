@@ -7,15 +7,7 @@ import { Button } from "@/components/ui/button"
 import { Users, CreditCard, Search } from "lucide-react"
 import { RfidScannerDialog } from "./rfid-scanner-dialog"
 import { ConfirmationDialog } from "@/components/confirmation-dialog"
-
-interface User {
-  _id: string
-  name: string
-  rfidUid: string
-  credit: number
-  lastScan: string
-  createdAt: string
-}
+import { User } from "@/types"
 
 interface OverviewProps {
   users: User[]

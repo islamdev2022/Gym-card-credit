@@ -196,7 +196,6 @@ export default function UserDisplayScreen() {
 
       if (response.ok) {
         setLookupUser(result.user)
-        console.log("User found:", result.user)
         await playSuccess()
         setLookupError("")
         setLookupScanning(false)
@@ -248,34 +247,60 @@ export default function UserDisplayScreen() {
       })
 
       const scanResult = await scanResponse.json()
+      console.log("Scan result:", scanResult)
 
       if (scanResult.success) {
-        const patchResponse = await fetch("/api/scan", {
-          method: "PATCH",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            uid: uid,
-            amount: 5,
-          }),
-        })
+  const lastScanTime = new Date(scanResult.user.lastScan);
+  const currentTime = new Date();
+  const timeDifference = currentTime.getTime() - lastScanTime.getTime();
+  const twelveHoursInMs = 12 * 60 * 60 * 1000; // 12 hours in milliseconds
 
-        if (patchResponse.ok) {
-          const patchResult = await patchResponse.json()
-          console.log("Patch result:", patchResult)
-          await playSuccess()
+  if (timeDifference >= twelveHoursInMs) {
+    const patchResponse = await fetch("/api/scan", {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        uid: uid,
+        amount: 5,
+      }),
+    });
 
-          setLastScan({
-            success: true,
-            user: patchResult.user,
-            message: "Access granted",
-            deductedAmount: patchResult.deductedAmount,
-            previousCredit: patchResult.previousCredit,
-          })
-        } else {
-          await playFailed()
-          setLastScan(scanResult)
-        }
-      } else {
+    if (patchResponse.ok) {
+      const patchResult = await patchResponse.json();
+      console.log("Patch result:", patchResult);
+      await playSuccess();
+
+      setLastScan({
+        success: true,
+        user: patchResult.user,
+        message: "Access granted",
+        deductedAmount: patchResult.deductedAmount,
+        previousCredit: patchResult.previousCredit,
+      });
+    } else {
+      await playFailed();
+      setLastScan(scanResult);
+    }
+  } else {
+    const response = await fetch("/api/user", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ rfidUid: uid }),
+      })
+
+      const result = await response.json()
+
+
+    if (result.success) {
+      playSuccess();
+      setLastScan({
+        success: true,
+        message: "Welcome Again! You can enter the gym.",
+        user: result.user
+      });
+    }
+  }
+} else {
         await playFailed()
         setLastScan(scanResult)
       }
@@ -297,7 +322,7 @@ export default function UserDisplayScreen() {
       setTimeout(() => {
         setShowScanResult(false)
         setLastScan(null)
-      }, 8000)
+      }, 5000)
     }
 
     setProcessing(false)
@@ -491,7 +516,7 @@ export default function UserDisplayScreen() {
                         </div>
                         <div>
                           <h2 className="text-2xl text-green-800">Welcome, {lastScan.user?.name}!</h2>
-                          <p className="text-green-600">Access Granted - Entry Allowed</p>
+                          <p className="text-green-600">{lastScan.message}</p>
                         </div>
                       </>
                     ) : (
@@ -508,7 +533,7 @@ export default function UserDisplayScreen() {
                   </CardTitle>
                 </CardHeader>
 
-                {lastScan.success && lastScan.user && (
+                {lastScan.success && lastScan.user && lastScan.message!= "Welcome Again! You can enter the gym." && (
                   <CardContent>
                     <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
                       <div className="flex items-center gap-3">

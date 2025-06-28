@@ -61,7 +61,9 @@ export async function POST(request: NextRequest) {
       name: cleanName,
       rfidUid: cleanRfidUid,
       credit: userCredit,
-      lastScan: new Date(),
+      lastScan: null,
+      scans: [],
+      topUps: [],
       createdAt: new Date(),
     })
 
@@ -74,6 +76,8 @@ export async function POST(request: NextRequest) {
         name: user.name,
         rfidUid: user.rfidUid,
         credit: user.credit,
+        topUps: user.topUps,
+        scans: user.scans,
         lastScan: user.lastScan,
         createdAt: user.createdAt,
       },

@@ -11,15 +11,7 @@ import { Badge } from "@/components/ui/badge"
 import { Alert, AlertDescription } from "@/components/ui/alert"
 import { Scan, UserIcon, CreditCard, Clock, CheckCircle, XCircle, Search, Trash2 } from "lucide-react"
 import { ConfirmationDialog } from "@/components/confirmation-dialog"
-
-interface User {
-  _id: string
-  name: string
-  rfidUid: string
-  credit: number
-  lastScan: string
-  createdAt: string
-}
+import { User } from "@/types"
 
 interface RfidScannerDialogProps {
   trigger?: React.ReactNode
@@ -280,6 +272,13 @@ export function RfidScannerDialog({ trigger, onUserDeleted, onShowToast }: RfidS
                         <h3 className="text-xl font-semibold">{scannedUser.name}</h3>
                         <p className="text-sm text-gray-600">Member Information</p>
                       </div>
+                      <div className="flex items-center gap-3">
+                        <Clock className="w-5 h-5 text-gray-500" />
+                        <div>
+                          <p className="text-sm text-gray-600">Member Since</p>
+                          <p className="text-sm">{new Date(scannedUser.createdAt).toLocaleDateString()}</p>
+                        </div>
+                    </div>
                     </CardTitle>
                   </CardHeader>
                   <CardContent>
@@ -327,13 +326,31 @@ export function RfidScannerDialog({ trigger, onUserDeleted, onShowToast }: RfidS
                         </div>
                       </div>
                     </div>
-
-                    <div className="mt-4 pt-4 border-t">
-                      <div className="flex items-center gap-3">
-                        <Clock className="w-5 h-5 text-gray-500" />
+                    <div className="flex items-center gap-3">
+                      <div className="flex items-center gap-3 mt-2">
+                        <Search className="w-5 h-5 text-gray-500" />
                         <div>
-                          <p className="text-sm text-gray-600">Member Since</p>
-                          <p className="text-sm">{new Date(scannedUser.createdAt).toLocaleDateString()}</p>
+                          <p className="text-sm text-gray-600">Recent Scans</p>
+                          <ul className="list-disc pl-5">
+                            {scannedUser.scans?.slice(-5).map((date, index) => (
+                              <li key={index} className="text-sm">
+                                l{new Date(date).toLocaleString()}
+                              </li>
+                            ))}
+                          </ul>
+                        </div>
+                      </div>
+                      <div className="flex items-center gap-3 mt-2">
+                        <Search className="w-5 h-5 text-gray-500" />
+                        <div>
+                          <p className="text-sm text-gray-600">Recent Top-Ups</p>
+                          <ul className="list-disc pl-5">
+                            {scannedUser.topUps?.slice(-5).map((topUp, index) => (
+                              <li key={index} className="text-sm">
+                                {topUp.amount} credits on {new Date(topUp.date).toLocaleString()}
+                              </li>
+                            ))}
+                          </ul>
                         </div>
                       </div>
                     </div>

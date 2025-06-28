@@ -8,15 +8,8 @@ import { Label } from "@/components/ui/label"
 import { Badge } from "@/components/ui/badge"
 import { Alert, AlertDescription } from "@/components/ui/alert"
 import { Wallet, Scan, CheckCircle, XCircle, RefreshCw, Plus } from "lucide-react"
+import { User } from "@/types"
 
-interface User {
-  _id: string
-  name: string
-  rfidUid: string
-  credit: number
-  lastScan: string
-  createdAt: string
-}
 
 interface TopUpProps {
   users: User[]

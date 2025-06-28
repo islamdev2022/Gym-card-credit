@@ -5,21 +5,24 @@ export async function PATCH(request: NextRequest) {
   try {
     const { rfidUid, amount } = await request.json()
 
-    if (!rfidUid || !amount || amount <= 0) {
+    if (!rfidUid || typeof amount !== "number" || amount <= 0) {
       return NextResponse.json({ error: "Valid RFID UID and amount are required" }, { status: 400 })
     }
 
     await connectDB()
 
-    // Find user by RFID UID instead of MongoDB _id
     const user = await User.findOne({ rfidUid })
     if (!user) {
       return NextResponse.json({ error: "User not found" }, { status: 404 })
     }
 
     const previousCredit = user.credit
+
+    // Update credit
     user.credit += amount
-    user.lastScan = new Date()
+
+    user.topUps.push({ amount, date: new Date() })
+
     await user.save()
 
     return NextResponse.json({
@@ -31,7 +34,7 @@ export async function PATCH(request: NextRequest) {
         rfidUid: user.rfidUid,
         credit: user.credit,
         previousCredit,
-        lastScan: user.lastScan,
+        topUps: user.topUps,
       },
     })
   } catch (error) {

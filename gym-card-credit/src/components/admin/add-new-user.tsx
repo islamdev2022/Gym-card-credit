@@ -20,14 +20,7 @@ import {
   AlertTriangle,
 } from "lucide-react"
 
-interface UserType {
-  _id: string
-  name: string
-  rfidUid: string
-  credit: number
-  lastScan: string
-  createdAt: string
-}
+import { User } from "@/types"
 
 interface AddNewUserProps {
   onUserAdded: () => void
@@ -38,7 +31,7 @@ export function AddNewUser({ onUserAdded, onShowToast }: AddNewUserProps) {
   const [loading, setLoading] = useState(false)
   const [isScanning, setIsScanning] = useState(false)
   const [scannedUid, setScannedUid] = useState("")
-  const [existingUser, setExistingUser] = useState<UserType | null>(null)
+  const [existingUser, setExistingUser] = useState<User | null>(null)
   const [scanError, setScanError] = useState("")
   const [lastScanTime, setLastScanTime] = useState(0)
   const [newUserForm, setNewUserForm] = useState({ name: "", credit: 10 })

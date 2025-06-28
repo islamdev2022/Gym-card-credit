@@ -20,7 +20,6 @@ export const connectDB = async () => {
   }
 };
 
-// User Schema
 const userSchema = new mongoose.Schema({
   name: {
     type: String,
@@ -42,6 +41,25 @@ const userSchema = new mongoose.Schema({
     type: Date,
     default: Date.now,
   },
+  scans: [
+    {
+      type: Date,
+      default: Date.now,
+    },
+  ],
+  topUps: [
+    {
+      amount: {
+        type: Number,
+        required: true,
+        min: 0,
+      },
+      date: {
+        type: Date,
+        default: Date.now,
+      },
+    },
+  ],
   createdAt: {
     type: Date,
     default: Date.now,

@@ -64,6 +64,7 @@ export async function POST(request: NextRequest) {
         name: user.name,
         rfidUid: user.rfidUid,
         credit: user.credit,
+        scans: user.scans,
         lastScan: user.lastScan,
       },
       message: "Access granted",
@@ -136,10 +137,13 @@ export async function PATCH(request: NextRequest) {
     }
 
     const previousCredit = user.credit
+    const now = new Date()
 
-    // Deduct credit and update last scan
+    // Deduct credit, update last scan, and push to scans history
     user.credit -= amount
-    user.lastScan = new Date()
+    user.lastScan = now
+    user.scans.push(now)
+
     await user.save()
 
     console.log(`[PATCH SCAN] Credit deducted for: ${user.name}, Previous: ${previousCredit}, Current: ${user.credit}`)
@@ -151,6 +155,8 @@ export async function PATCH(request: NextRequest) {
         name: user.name,
         rfidUid: user.rfidUid,
         credit: user.credit,
+        scans: user.scans,
+        topUps: user.topUps,
         lastScan: user.lastScan,
       },
       message: "Credit deducted successfully",
